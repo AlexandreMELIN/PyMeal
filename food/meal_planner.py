@@ -14,8 +14,11 @@ class Meal:
     def __init__(self, items: List[MealItem]):
         self.items = items
 
+    def __str__(self):
+        return ''.join([f"{i.food.food_name}: {i.quantity}g\n" for i in self.items])
+
 class TargetMacro:
-    def __init__(self, protein: int, carbohydrates: int, fat: int, fiber: int):
+    def __init__(self, protein: float, carbohydrates: float, fat: float = 0.0, fiber: float = 25.0):
         if protein < 0:
             raise ValueError("Protein cannot be negative")
         if carbohydrates < 0:
@@ -28,7 +31,6 @@ class TargetMacro:
         self.carbohydrates = carbohydrates
         self.fiber = fiber
         self.fat = fat
-
 
 def plan_a_breakfast(preference: MealPreference, target_macro: TargetMacro) -> Meal:
     meal = Meal([])
@@ -77,7 +79,7 @@ def plan_a_meal(meal_preference: MealPreference, target_macro: TargetMacro) -> M
     meal.items.append(MealItem(starch, quantity))
 
     protein: Food = random.choice(list(meal_preference.proteins))
-    quantity = _compute_quantity_to_match_macro(protein.nutritional_panel.carbohydrates, target_protein)
+    quantity = _compute_quantity_to_match_macro(protein.nutritional_panel.protein, target_protein)
     meal.items.append(MealItem(protein, quantity))
 
     vegetable: Food = random.choice(list(meal_preference.vegetables))
@@ -88,6 +90,13 @@ def plan_a_meal(meal_preference: MealPreference, target_macro: TargetMacro) -> M
         fruit = random.choice(list(meal_preference.fruits))
         meal.items.append(MealItem(fruit, 80))
     return meal
+
+def plan_a_day(breakfast_preference: MealPreference, meal_preference: MealPreference, target_macro: TargetMacro) -> list[Meal]:
+    meals = []
+    meals.append(plan_a_breakfast(breakfast_preference, TargetMacro(target_macro.protein * 0.2, target_macro.carbohydrates * 0.2, target_macro.fiber * 0.2)))
+    meals.append(plan_a_meal(meal_preference, TargetMacro(target_macro.protein * 0.3, target_macro.carbohydrates * 0.3, target_macro.fiber * 0.3)))
+    meals.append(plan_a_meal(meal_preference, TargetMacro(target_macro.protein * 0.5, target_macro.carbohydrates * 0.5, target_macro.fiber * 0.5)))
+    return meals
 
 def _compute_quantity_to_match_macro(macro_for_100_grams: float, target: float) -> float:
     return target / macro_for_100_grams * 100
