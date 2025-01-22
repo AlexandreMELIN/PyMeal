@@ -1,21 +1,9 @@
 from typing import List
 
 from food.food import Food
+from food.meal_organization import MealsForADay, MealsForAWeek, Meal, MealItem
 from food.meal_preference import MealPreference
 import random
-
-class MealItem:
-    def __init__(self, food: Food, quantity: float):
-        self.food = food
-        self.quantity = quantity
-
-
-class Meal:
-    def __init__(self, items: List[MealItem]):
-        self.items = items
-
-    def __str__(self):
-        return ''.join([f"{i.food.food_name}: {i.quantity}g\n" for i in self.items])
 
 class TargetMacro:
     def __init__(self, protein: float, carbohydrates: float, fat: float = 0.0, fiber: float = 25.0):
@@ -91,12 +79,23 @@ def plan_a_meal(meal_preference: MealPreference, target_macro: TargetMacro) -> M
         meal.items.append(MealItem(fruit, 80))
     return meal
 
-def plan_a_day(breakfast_preference: MealPreference, meal_preference: MealPreference, target_macro: TargetMacro) -> list[Meal]:
-    meals = []
-    meals.append(plan_a_breakfast(breakfast_preference, TargetMacro(target_macro.protein * 0.2, target_macro.carbohydrates * 0.2, target_macro.fiber * 0.2)))
-    meals.append(plan_a_meal(meal_preference, TargetMacro(target_macro.protein * 0.3, target_macro.carbohydrates * 0.3, target_macro.fiber * 0.3)))
-    meals.append(plan_a_meal(meal_preference, TargetMacro(target_macro.protein * 0.5, target_macro.carbohydrates * 0.5, target_macro.fiber * 0.5)))
-    return meals
+def plan_a_day(breakfast_preference: MealPreference, meal_preference: MealPreference, target_macro: TargetMacro) -> MealsForADay:
+    return MealsForADay(
+        breakfast=plan_a_breakfast(breakfast_preference, TargetMacro(target_macro.protein * 0.2, target_macro.carbohydrates * 0.2, target_macro.fiber * 0.2)),
+        lunch=plan_a_meal(meal_preference, TargetMacro(target_macro.protein * 0.3, target_macro.carbohydrates * 0.3, target_macro.fiber * 0.3)),
+        dinner=plan_a_meal(meal_preference, TargetMacro(target_macro.protein * 0.5, target_macro.carbohydrates * 0.5, target_macro.fiber * 0.5))
+    )
+
+def plan_a_week(breakfast_preference: MealPreference, meal_preference: MealPreference, target_macro: TargetMacro) -> MealsForAWeek:
+    return MealsForAWeek(
+        plan_a_day(breakfast_preference, meal_preference, target_macro),
+        plan_a_day(breakfast_preference, meal_preference, target_macro),
+        plan_a_day(breakfast_preference, meal_preference, target_macro),
+        plan_a_day(breakfast_preference, meal_preference, target_macro),
+        plan_a_day(breakfast_preference, meal_preference, target_macro),
+        plan_a_day(breakfast_preference, meal_preference, target_macro),
+        plan_a_day(breakfast_preference, meal_preference, target_macro),
+    )
 
 def _compute_quantity_to_match_macro(macro_for_100_grams: float, target: float) -> float:
     return target / macro_for_100_grams * 100
